@@ -190,7 +190,7 @@ namespace ControllerPage
 
             for (int i = 1; i <= 30; i++)
             {
-                Combobox_NumInterval.Items.Add(i.ToString());
+                //Combobox_NumInterval.Items.Add(i.ToString());
             }
 
             List<string> List_TimeInter = Sensor_input_Helper.Get_List_Time_Interval();
@@ -199,19 +199,19 @@ namespace ControllerPage
 
             foreach (string TimeInter in List_TimeInter)
             {
-                Combobox_timeinterval.Items.Add(TimeInter);
+                //Combobox_timeinterval.Items.Add(TimeInter);
             }
 
             foreach (int i in Enum.GetValues(typeof(number_grain)))
             {
-                Combobox_NumberGrain.Items.Add(i.ToString());
+                //Combobox_NumberGrain.Items.Add(i.ToString());
             }
 
             List<string> List_TypeMeasure = Enum.GetNames(typeof(TypeOfMeasure)).ToList();
 
             foreach (string Measure in List_TypeMeasure)
             {
-                Combobox_MeasureType.Items.Add(Measure);
+                //Combobox_MeasureType.Items.Add(Measure);
             }
 
         }
