@@ -599,6 +599,7 @@ namespace ControllerPage
             this.button1.TabIndex = 53;
             this.button1.Text = "button1";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Visible = false;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // button2
@@ -610,6 +611,7 @@ namespace ControllerPage
             this.button2.TabIndex = 54;
             this.button2.Text = "button2";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Visible = false;
             this.button2.Click += new System.EventHandler(this.button2_Click_3);
             // 
             // button3
@@ -621,6 +623,7 @@ namespace ControllerPage
             this.button3.TabIndex = 55;
             this.button3.Text = "button3";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click_2);
             // 
             // button4
@@ -632,6 +635,7 @@ namespace ControllerPage
             this.button4.TabIndex = 56;
             this.button4.Text = "button4";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Visible = false;
             this.button4.Click += new System.EventHandler(this.button4_Click_1);
             // 
             // button5
@@ -643,6 +647,7 @@ namespace ControllerPage
             this.button5.TabIndex = 57;
             this.button5.Text = "button5";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Visible = false;
             this.button5.Click += new System.EventHandler(this.button5_Click_1);
             // 
             // Form1
