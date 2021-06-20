@@ -306,7 +306,7 @@ namespace ControllerPage.Helper
             try
             {
                 connection.Open();
-                //MessageBox.Show("successful connection");
+                MessageBox.Show("successful connection");
                 connection.Close();
             }
             catch (MySqlException ex)

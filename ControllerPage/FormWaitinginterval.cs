@@ -18,6 +18,8 @@ namespace ControllerPage
         public FormWaitinginterval()
         {
             InitializeComponent();
+
+            Combobox_timeinterval.Items.Clear();
             List<string> List_TimeInter = Sensor_input_Helper.Get_List_Time_Interval();
             foreach (string TimeInter in List_TimeInter)
             {

@@ -20,7 +20,8 @@ namespace ControllerPage
         public FormNumberinterval()
         {
             InitializeComponent();
-            for (int i = 1; i <= 30; i++)
+            Combobox_NumInterval.Items.Clear();
+            for (int i = 1; i <= 50; i++)
             {
                 Combobox_NumInterval.Items.Add(i.ToString());
             }

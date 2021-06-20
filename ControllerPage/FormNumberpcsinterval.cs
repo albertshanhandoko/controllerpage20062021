@@ -16,6 +16,8 @@ namespace ControllerPage
         public FormNumberpcsinterval()
         {
             InitializeComponent();
+
+            Combobox_NumPerPCS.Items.Clear();
             foreach (int i in Enum.GetValues(typeof(number_grain)))
             {
                 Combobox_NumPerPCS.Items.Add(i.ToString());

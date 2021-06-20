@@ -26,7 +26,8 @@ namespace ControllerPage
         // Parameter General Apliaksi
         SerialPort mySerialPort;
         //SerialPort mySerialPort = new SerialPort("COM1");
-        static string application_name = "test1213";
+        static string application_name = "GX_MX_001_Controller";
+
 
         // Parameter Input
         int delay;
@@ -39,12 +40,12 @@ namespace ControllerPage
         System.Timers.Timer MyTimer = new System.Timers.Timer();
 
         int blink_timer;
-        
+
         // Parameter Looping Sensor
         int current_interval;
         bool start_next_cond;
         bool aggregate_cond;
-        bool stat_continue = true;
+        bool stat_continue;
         List<data_measure_2> Data_Measure_Result = new List<data_measure_2> { };
         List<data_measure_2> Data_Avg_Result = new List<data_measure_2> { };
         data_measure_2 Data_Measure_Current;
@@ -52,6 +53,8 @@ namespace ControllerPage
         int timer_counter = 0;
         float total_current_Average;
         float total_average;
+        int finish_measurement = 0;
+
         //database parameter
         int batch_id;
 
@@ -87,29 +90,20 @@ namespace ControllerPage
                     string val = form.Productselection;            //values preserved after close
                     //Do something here with these values
                     string display_val = val.Replace("_", " ");
-                    //for example
                     ButtonProduct.Text = display_val;
-                    string combox_typemeasure = val;
-                    TypeOfMeasure enum_typemeasure = (TypeOfMeasure)Enum.Parse(typeof(TypeOfMeasure), val);
-                    ResultMeasure = Sensor_input_Helper.GetDescription(enum_typemeasure);
 
                 }
             }
         }
         public void button3_Click_1(object sender, EventArgs e)
         {
- 
+
             using (var form = new FormNumberinterval())
             {
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    decimal val = form.Intervalselection;            //values preserved after close
-                    //Do something here with these values
-
-                    //for example
                     ButtonNumInterval.Text = FormNumberinterval.combobox_selectedItem_number_Interval;
-                    TotalInterval = int.Parse(FormNumberinterval.combobox_selectedItem_number_Interval);
                 }
             }
         }
@@ -123,18 +117,7 @@ namespace ControllerPage
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    string val = form.Pcsselection;            //values preserved after close
-                    //Do something here with these values
-
-                    //for example
                     ButtonNumPcs.Text = FormNumberpcsinterval.combobox_selectedItem_number_PerPCS;
-                    
-                    TotalInterval = int.Parse(FormNumberpcsinterval.combobox_selectedItem_number_PerPCS);
-                    
-                    number_grain enum_numgrain = (number_grain)Enum.Parse(typeof(number_grain), FormNumberpcsinterval.combobox_selectedItem_number_PerPCS);
-                    ResultGrain = Sensor_input_Helper.GetDescription(enum_numgrain);
-
-
                 }
             }
         }
@@ -148,15 +131,7 @@ namespace ControllerPage
                 var result = form.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    decimal val = form.WaitingIntervalselection;            //values preserved after close
-                    //Do something here with these values
-
-                    //for example
-                    ButtonWaitingTime.Text = FormWaitinginterval.combobox_selectedItem_WaitingTime ;
-                    
-                    var result_time = Sensor_input_Helper.GetEnumValueFromDescription<Time_Interval>(FormWaitinginterval.combobox_selectedItem_WaitingTime);
-                    delay = ((int)(result_time)) * 60;
-
+                    ButtonWaitingTime.Text = FormWaitinginterval.combobox_selectedItem_WaitingTime;
 
                 }
             }
@@ -169,65 +144,76 @@ namespace ControllerPage
         }
         //
 
+        private void data_cleansing()
+        {
+            // Parameter Di Layar
+            ButtonProduct.Text = "";
+            ButtonNumInterval.Text = "";
+            ButtonNumPcs.Text = "";
+            ButtonWaitingTime.Text = "";
+            Curr_Interval_TextBox.Text = "";
+            Curr_Kernel_TextBox.Text = "";
+            Current_Avg_TextBox.Text = "";
+            Curr_Measure_TextBox.Text = "";
+            //Temp_TextBox.Text = "";
 
+            // Parameter Input
+            delay = 0;
+            TotalInterval = 0;
+            counter_data = 0;
+            ResultGrain = null;
+            ResultMeasure = null;
+            temp_cond = false;
+            //System.Windows.Forms.Timer MyTimer = new System.Windows.Forms.Timer();
+            System.Timers.Timer MyTimer = new System.Timers.Timer();
+
+            blink_timer = 0;
+
+            // Parameter Looping Sensor
+            current_interval = 0;
+            start_next_cond = false;
+            aggregate_cond = false;
+            stat_continue = false;
+            Data_Measure_Result = new List<data_measure_2> { };
+            Data_Avg_Result = new List<data_measure_2> { };
+            Data_Measure_Current = null;
+            Data_Avg_Current = null;
+            timer_counter = 0;
+            total_current_Average = 0;
+            total_average = 0;
+            finish_measurement = 0;
+
+            //database parameter
+
+        }
         private void data_initiation_input()
         {
 
             comboBox_IPAddress.Items.Clear();
             comboBox_IPAddress.Items.Add(Sensor_input_Helper.GetLocalIPAddress());
 
+            Combobox_Mode.Items.Clear();
+            Combobox_Mode.Items.Add("Interval");
+
             Combobox_ComPort.Items.Clear();
-            /*
-            var portNames = SerialPort.GetPortNames();
-            
-            foreach (var portname in portNames)
-            {
-                Combobox_ComPort.Items.Add(portname.ToString());
-            }
-            */
-            Combobox_ComPort.Items.Add("/dev/ttyAMA0");
-            Combobox_ComPort.Items.Add("/dev/ttyS0");
-
-            for (int i = 1; i <= 30; i++)
-            {
-                //Combobox_NumInterval.Items.Add(i.ToString());
-            }
-
-            List<string> List_TimeInter = Sensor_input_Helper.Get_List_Time_Interval();
-            //IEnumerable<string> List_enumrea = Sensor_input_Helper.Get_Time_Interval_enumera();
+            Combobox_ComPort.Items.Add("RS-485");
 
 
-            foreach (string TimeInter in List_TimeInter)
-            {
-                //Combobox_timeinterval.Items.Add(TimeInter);
-            }
-
-            foreach (int i in Enum.GetValues(typeof(number_grain)))
-            {
-                //Combobox_NumberGrain.Items.Add(i.ToString());
-            }
-
-            List<string> List_TypeMeasure = Enum.GetNames(typeof(TypeOfMeasure)).ToList();
-
-            foreach (string Measure in List_TypeMeasure)
-            {
-                //Combobox_MeasureType.Items.Add(Measure);
-            }
 
         }
 
         private void MyTimer_Tick(object sender, EventArgs e)
         {
-            
+
             //MessageBox.Show("The form will now be closed.", "Time Elapsed");
 
             Random rd_timer = new Random();
             int rand_num_timer = rd_timer.Next(1, 9);
-            if (blink_timer % 2==0)
+            if (blink_timer % 2 == 0)
             {
                 Curr_Measure_TextBox.Invoke((Action)delegate
                 {
-                    Curr_Measure_TextBox.Text = "."+" ";
+                    Curr_Measure_TextBox.Text = "." + " ";
                 });
             }
             else
@@ -328,71 +314,84 @@ namespace ControllerPage
             {
                 MessageBox.Show("PLease Enter Waiting Time", application_name);
             }
-            else 
+            else
             {
-            
-            // get data from ComboBox
-            // 0.5 min -> this is description. need to get value
-            /*
-            string combox_timeinteval = Combobox_timeinterval.SelectedItem.ToString();
-            var result = Sensor_input_Helper.GetEnumValueFromDescription<Time_Interval>(combox_timeinteval);
-            delay = ((int)(result)) * 60;
-            */
-            // 1 -> use directly
-            //TotalInterval = int.Parse(Combobox_NumInterval.SelectedItem.ToString());
-            /*
-            TotalInterval = int.Parse(ButtonNumInterval.Text.ToString());
-            */
 
-            // 10 => this is int vlaue.get the description
-            /*
-            string combox_numbergrain = Combobox_NumberGrain.SelectedItem.ToString();
-            number_grain enum_numgrain = (number_grain)Enum.Parse(typeof(number_grain), combox_numbergrain);
-            ResultGrain = Sensor_input_Helper.GetDescription(enum_numgrain);
-            */
+                // get data from ComboBox
+                // 0.5 min -> this is description. need to get value
 
-            // Short paddy => this is value string. get the desc
+                //string combox_timeinteval = Combobox_timeinterval.SelectedItem.ToString();
+                var result = Sensor_input_Helper.GetEnumValueFromDescription<Time_Interval>(ButtonWaitingTime.Text);
+                delay = ((int)(result)) * 60;
 
-            /*
-            string combox_typemeasure = Combobox_MeasureType.SelectedItem.ToString();
-            TypeOfMeasure enum_typemeasure = (TypeOfMeasure)Enum.Parse(typeof(TypeOfMeasure), combox_typemeasure);
-            ResultMeasure = Sensor_input_Helper.GetDescription(enum_typemeasure);
-            */
+                // 1 -> use directly
+                //TotalInterval = int.Parse(Combobox_NumInterval.SelectedItem.ToString());
 
-            batch_id = 5;
-            
-            //MyTimer.Start();
-            Random rd = new Random();
-            int rand_num = rd.Next(1, 255);
-
-            Sensor_input_Helper.Command_CheckTemp(mySerialPort);
-            string result_temp = null;
-            result_temp = CheckTemp();
-
-            while (String.IsNullOrEmpty(Temp_TextBox.Text))
-            {
-                Console.WriteLine("");
-            }
-
-            Thread.Sleep(500);
-            timer_counter = 1;
-            batch_id = Sensor_input_Helper.MySql_Insert_Batch(Sensor_input_Helper.GetLocalIPAddress() 
-                , ButtonProduct.Text
-                , TotalInterval
-                , delay.ToString()
-                , Int32.Parse(FormNumberpcsinterval.combobox_selectedItem_number_PerPCS)
-                ,result_temp );
+                TotalInterval = int.Parse(ButtonNumInterval.Text.ToString());
 
 
-            // Run Sensor
-            Sensor_input_Helper.Command_Write(mySerialPort, ResultGrain);
-            Sensor_input_Helper.Command_Write(mySerialPort, ResultMeasure);
+                // 10 => this is int vlaue.get the description
 
-            current_interval = 0;
-            Curr_Interval_TextBox.Text = (current_interval + 1).ToString();
-            //MyTimer.Start();
-            Thread readThread = new Thread(Read);
-            readThread.Start();
+                //string combox_numbergrain = Combobox_NumberGrain.SelectedItem.ToString();
+                number_grain enum_numgrain = (number_grain)Enum.Parse(typeof(number_grain), ButtonNumPcs.Text);
+                ResultGrain = Sensor_input_Helper.GetDescription(enum_numgrain);
+
+
+                // Short paddy => this is value string. get the desc
+
+
+                string combox_typemeasure = ButtonProduct.Text;
+                combox_typemeasure = combox_typemeasure.Replace(" ", "_");
+                TypeOfMeasure enum_typemeasure = (TypeOfMeasure)Enum.Parse(typeof(TypeOfMeasure), combox_typemeasure);
+
+                ResultMeasure = Sensor_input_Helper.GetDescription(enum_typemeasure);
+
+                //MyTimer.Start();
+                if (Temp_TextBox.Text == "" || String.IsNullOrEmpty(Temp_TextBox.Text))
+                {
+                    Sensor_input_Helper.Command_CheckTemp(mySerialPort);
+                    //string result_temp = "29";
+                    string result_temp = CheckTemp();
+
+
+                    while (Temp_TextBox.Text == "")
+                    {
+                        Console.WriteLine("");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("textbox alread filled");
+                }
+                Thread.Sleep(500);
+                timer_counter = 1;
+                batch_id = Sensor_input_Helper.MySql_Insert_Batch(Sensor_input_Helper.GetLocalIPAddress()
+                    , combox_typemeasure
+                    , TotalInterval
+                    , delay.ToString()
+                    , Int32.Parse(ButtonNumPcs.Text)
+                    , Temp_TextBox.Text) ;
+
+
+                // Run Sensor
+                Console.WriteLine(ResultGrain);
+                Console.WriteLine(ResultMeasure);
+                stat_continue = true;
+                Sensor_input_Helper.Command_Stop(mySerialPort);
+                Thread.Sleep(2500);
+                Console.WriteLine("Stop");
+
+                Sensor_input_Helper.Command_Write(mySerialPort, ResultGrain);
+                Thread.Sleep(1000);
+                Sensor_input_Helper.Command_Write(mySerialPort, ResultMeasure);
+
+                Console.WriteLine("Start Sequence");
+                current_interval = 0;
+                Curr_Interval_TextBox.Text = (current_interval + 1).ToString();
+                //MyTimer.Start();
+                stat_continue = true;
+                Thread readThread = new Thread(Read);
+                readThread.Start();
 
 
             }
@@ -440,7 +439,7 @@ namespace ControllerPage
                         // Decide what to do with data
                         if (Result_Parsing != "" && Result_Parsing != null && !Result_Parsing.Trim().ToLower().Contains("r"))
                         {
-                            if(timer_counter==1)
+                            if (timer_counter == 1)
                             {
                                 MyTimer.Elapsed += new ElapsedEventHandler(MyTimer_Tick);
                                 MyTimer.Interval = (1000); // 45 mins
@@ -495,7 +494,7 @@ namespace ControllerPage
                             //OpenCon_Port_local(mySerialPort, BaudRate);
                             while (aggregate_cond)
                             {
-                            
+
                                 Sensor_input_Helper.Command_MoisturAggregate(mySerialPort);
                                 Thread.Sleep(2000);// this solves the problem
                                 Console.WriteLine("Next Iter");
@@ -519,7 +518,7 @@ namespace ControllerPage
                                     if (Result_Parsing.Contains("-") || (Result_Parsing.Length) > 4)
                                     {
                                         MyTimer.Stop();
-                                        
+
                                         AllText = GetWords(Result_Parsing);
                                         Result_Parsing = AllText[1].Substring(5, 3);
                                         Result_Parsing = String.Concat(Result_Parsing.Substring(0, Result_Parsing.Length - 1)
@@ -527,7 +526,7 @@ namespace ControllerPage
                                         Data_Avg_Result.Add(new data_measure_2(100, Result_Parsing, (DateTime.Now).ToString()));
                                         aggregate_cond = false;
 
-                                        
+
                                         Curr_Measure_TextBox.Invoke((Action)delegate
                                         {
                                             Curr_Measure_TextBox.Text = Result_Parsing;
@@ -542,11 +541,11 @@ namespace ControllerPage
                                             }
 
                                             total_current_Average = total_average / Data_Avg_Result.Count();
-                                            Current_Avg_TextBox.Text = total_current_Average.ToString("0.0") +"%";
+                                            Current_Avg_TextBox.Text = total_current_Average.ToString("0.0") + "%";
                                             //Final Average
                                         });
-                                       //loat Result_Parsing_input = float.Parse(Result_Parsing);
-                                       Sensor_input_Helper.MySql_Insert_Measure(batch_id, 1000 + current_interval + 1, float.Parse(Result_Parsing), DateTime.Now, 1);
+                                        //loat Result_Parsing_input = float.Parse(Result_Parsing);
+                                        Sensor_input_Helper.MySql_Insert_Measure(batch_id, 1000 + current_interval + 1, float.Parse(Result_Parsing), DateTime.Now, 1);
 
                                         Console.WriteLine("Finish Aggregate");
                                     }
@@ -568,10 +567,10 @@ namespace ControllerPage
                                 stat_continue = false;
                                 mySerialPort.DiscardInBuffer();
                                 mySerialPort.DiscardOutBuffer();
-                                Sensor_input_Helper.Command_Stop(mySerialPort);
-                                mySerialPort.Close();
+                                //Sensor_input_Helper.Command_Stop(mySerialPort);
+                                //mySerialPort.Close();
 
-
+                                stat_continue = false;
                                 start_next_cond = false;
                                 aggregate_cond = false;
                                 Console.WriteLine("break finish");
@@ -583,21 +582,25 @@ namespace ControllerPage
                                 });
                                 */
 
-                                MessageBox.Show("Measurement Finish");
-                                break;
+                                finish_measurement = 1;
+                                //MessageBox.Show("Measurement Finish");
+                                //break;
+                                //continue;
 
                             }
 
+
                             #endregion
 
-
-                            #region Delay start
-                            Console.WriteLine("start delay", "start delay");
-                            //mySerialPort.Close();
-                            Thread.Sleep(delay);
-                            Console.WriteLine("Finish delay", "Finish delay");
-                            #endregion
-
+                            if (start_next_cond == true)
+                            {
+                                #region Delay start
+                                Console.WriteLine("start delay", "start delay");
+                                //mySerialPort.Close();
+                                Thread.Sleep(delay);
+                                Console.WriteLine("Finish delay", "Finish delay");
+                                #endregion
+                            }
                             #region Start Next sequence
 
                             while (start_next_cond)
@@ -605,11 +608,12 @@ namespace ControllerPage
                                 Console.WriteLine("Next Iter");
                                 Console.WriteLine("counter init is: ");
                                 Sensor_input_Helper.Command_Write(mySerialPort, ResultGrain);
+                                Thread.Sleep(1000);
                                 Sensor_input_Helper.Command_Write(mySerialPort, ResultMeasure);
                                 current_interval++;
                                 Curr_Interval_TextBox.Invoke((Action)delegate
                                 {
-                                Curr_Interval_TextBox.Text = (current_interval+1).ToString();
+                                    Curr_Interval_TextBox.Text = (current_interval + 1).ToString();
                                 });
 
                                 start_next_cond = false;
@@ -637,6 +641,9 @@ namespace ControllerPage
                 }
 
             }
+
+            //MessageBox.Show("measurement finsih");
+            Console.WriteLine("Measurement Finish");
         }
 
 
@@ -678,7 +685,8 @@ namespace ControllerPage
                         {
                             Temp_TextBox.Text = "<-20C";
                         });
-
+                        Sensor_input_Helper.Command_Stop(mySerialPort);
+                        temp_cond = false;
                     }
                     else if (Result_Parsing == "1200")
                     {
@@ -686,7 +694,8 @@ namespace ControllerPage
                         {
                             Temp_TextBox.Text = "-20C - 0C";
                         });
-
+                        Sensor_input_Helper.Command_Stop(mySerialPort);
+                        temp_cond = false;
                     }
                     else if (Result_Parsing == "1400")
                     {
@@ -694,7 +703,8 @@ namespace ControllerPage
                         {
                             Temp_TextBox.Text = "50C - 70C";
                         });
-
+                        Sensor_input_Helper.Command_Stop(mySerialPort);
+                        temp_cond = false;
                     }
 
                     else
@@ -707,10 +717,10 @@ namespace ControllerPage
                         {
                             Temp_TextBox.Text = Result_Parsing;
                         });
-
+                        Sensor_input_Helper.Command_Stop(mySerialPort);
+                        temp_cond = false;
                     }
-                    Sensor_input_Helper.Command_Stop(mySerialPort);
-                    temp_cond = false;
+
                 }
                 catch (Exception ex)
                 {
@@ -720,6 +730,7 @@ namespace ControllerPage
                 }
             }
 
+            Console.WriteLine("Finsih_Check_Temp");
             return Result_Parsing;
             //Sensor_input_Helper.Command_Stop(mySerialPort);
         }
@@ -747,12 +758,12 @@ namespace ControllerPage
 
         private void Btn_Check_Click(object sender, EventArgs e)
         {
-            
+
             // Open Port
-            
+
             string comport = Combobox_ComPort.Text;
             int BaudRate = 1200;
-            mySerialPort = new SerialPort(comport);
+            mySerialPort = new SerialPort("/dev/ttyS0");
             mySerialPort.Close();
             try
             {
@@ -763,9 +774,25 @@ namespace ControllerPage
             }
             catch (Exception ex)
             {
+                MessageBox.Show("Port is not connected");
                 Console.WriteLine(ex.Message);
                 //  Block of code to handle errors
             }
+
+            try
+            {
+                //Sensor_input_Helper.MySQL_ConnectDatabase_test("192.168.0.4");
+                Sensor_input_Helper.MySQL_ConnectDatabase();
+                MessageBox.Show("connection succeed", application_name);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database is not connected");
+                Console.WriteLine(ex.Message);
+                //  Block of code to handle errors
+            }
+
+            data_cleansing();
         }
 
         private void textBox_Password_TextChanged(object sender, EventArgs e)
@@ -827,7 +854,7 @@ namespace ControllerPage
 
         }
 
-        
+
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -844,5 +871,37 @@ namespace ControllerPage
 
         }
 
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            Console.WriteLine("test");
+            this.Close();
+        }
+
+        private void button2_Click_3(object sender, EventArgs e)
+        {
+            //Sensor_input_Helper.Command_Write(mySerialPort, "10192\r");
+            //Thread.Sleep(1000);
+            //Sensor_input_Helper.Command_Write(mySerialPort, "22094\r");
+            this.Invalidate();
+            this.Refresh();
+        }
+
+        private void button3_Click_2(object sender, EventArgs e)
+        {
+            this.Controls.Clear();// 'removes all the controls on the form
+            InitializeComponent();// 'load all the controls again
+            Form1_Load(e, e);// 'Load everything in your form, load event again
+            //Sensor_input_Helper.Command_Write(mySerialPort, "22094\r");
+        }
+
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+            Sensor_input_Helper.Command_Write(mySerialPort, "10192\r");
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            Sensor_input_Helper.Command_Write(mySerialPort, "22094\r");
+        }
     }
 }
